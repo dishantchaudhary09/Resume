@@ -96,6 +96,78 @@ const emptyAchievement = {
   description: "",
 };
 
+function Input({ label, value, onChange, placeholder, type = "text" }) {
+  const isDark = useSelector((state) => state.theme.mode === "dark");
+
+  return (
+    <div>
+      <label
+        className={`mb-2 block text-xs font-medium ${
+          isDark ? "text-[#D7D7D7]" : "text-[#4B5563]"
+        }`}
+      >
+        {label}
+      </label>
+
+      <input
+        type={type}
+        value={value || ""}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        className={`w-full rounded-[12px] border px-3.5 py-3 text-sm outline-none transition ${
+          isDark
+            ? "border-[#30343A] bg-[#191C21] text-[#FAF9F4] placeholder:text-[#70757D] focus:border-[#FAF9F4]"
+            : "border-[#E0E0E0] bg-white text-[#111111] placeholder:text-[#9CA3AF] focus:border-[#111111]"
+        }`}
+      />
+    </div>
+  );
+}
+
+function Textarea({ label, value, onChange, placeholder }) {
+  const isDark = useSelector((state) => state.theme.mode === "dark");
+
+  return (
+    <div>
+      <label
+        className={`mb-2 block text-xs font-medium ${
+          isDark ? "text-[#D7D7D7]" : "text-[#4B5563]"
+        }`}
+      >
+        {label}
+      </label>
+
+      <textarea
+        value={value || ""}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        rows={5}
+        className={`w-full resize-none rounded-[12px] border px-3.5 py-3 text-sm outline-none transition ${
+          isDark
+            ? "border-[#30343A] bg-[#191C21] text-[#FAF9F4] placeholder:text-[#70757D] focus:border-[#FAF9F4]"
+            : "border-[#E0E0E0] bg-white text-[#111111] placeholder:text-[#9CA3AF] focus:border-[#111111]"
+        }`}
+      />
+    </div>
+  );
+}
+
+function SectionWrapper({ title, children }) {
+  const isDark = useSelector((state) => state.theme.mode === "dark");
+
+  return (
+    <div
+      className={`rounded-[15px] border p-5 sm:p-6 ${
+        isDark ? "border-[#30343A] bg-[#111111]" : "border-[#E7E7E7] bg-white"
+      }`}
+    >
+      <h2 className="text-lg font-medium">{title}</h2>
+
+      <div className="mt-5">{children}</div>
+    </div>
+  );
+}
+
 /* =========================================================
    COMPONENT
 ========================================================= */
@@ -454,78 +526,6 @@ function Builder() {
       setSaving(false);
     }
   };
-
-  /* =======================================================
-     INPUT COMPONENT
-  ======================================================= */
-
-  const Input = ({ label, value, onChange, placeholder, type = "text" }) => (
-    <div>
-      <label
-        className={`mb-2 block text-xs font-medium ${
-          isDark ? "text-[#D7D7D7]" : "text-[#4B5563]"
-        }`}
-      >
-        {label}
-      </label>
-
-      <input
-        type={type}
-        value={value || ""}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className={`w-full rounded-[12px] border px-3.5 py-3 text-sm outline-none transition ${
-          isDark
-            ? "border-[#30343A] bg-[#191C21] text-[#FAF9F4] placeholder:text-[#70757D] focus:border-[#FAF9F4]"
-            : "border-[#E0E0E0] bg-white text-[#111111] placeholder:text-[#9CA3AF] focus:border-[#111111]"
-        }`}
-      />
-    </div>
-  );
-
-  /* =======================================================
-     TEXTAREA
-  ======================================================= */
-
-  const Textarea = ({ label, value, onChange, placeholder }) => (
-    <div>
-      <label
-        className={`mb-2 block text-xs font-medium ${
-          isDark ? "text-[#D7D7D7]" : "text-[#4B5563]"
-        }`}
-      >
-        {label}
-      </label>
-
-      <textarea
-        value={value || ""}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        rows={5}
-        className={`w-full resize-none rounded-[12px] border px-3.5 py-3 text-sm outline-none transition ${
-          isDark
-            ? "border-[#30343A] bg-[#191C21] text-[#FAF9F4] placeholder:text-[#70757D] focus:border-[#FAF9F4]"
-            : "border-[#E0E0E0] bg-white text-[#111111] placeholder:text-[#9CA3AF] focus:border-[#111111]"
-        }`}
-      />
-    </div>
-  );
-
-  /* =======================================================
-     SECTION WRAPPER
-  ======================================================= */
-
-  const SectionWrapper = ({ title, children }) => (
-    <div
-      className={`rounded-[15px] border p-5 sm:p-6 ${
-        isDark ? "border-[#30343A] bg-[#111111]" : "border-[#E7E7E7] bg-white"
-      }`}
-    >
-      <h2 className="text-lg font-medium">{title}</h2>
-
-      <div className="mt-5">{children}</div>
-    </div>
-  );
 
   /* =======================================================
      PERSONAL SECTION
