@@ -18,6 +18,92 @@ const getUrl = (url) => {
 
 const safeArray = (value) => (Array.isArray(value) ? value : []);
 
+const demoResumeData = {
+  name: "Alex Morgan",
+  role: "Full Stack Developer",
+  email: "alex.morgan@example.com",
+  phone: "+91 98765 43210",
+  location: "Lucknow, India",
+  summary:
+    "Full Stack Developer focused on building clean, scalable web applications with modern JavaScript technologies.",
+  education: [
+    {
+      degree: "B.Tech in Computer Science",
+      institute: "Institute of Technology",
+      date: "2021 - 2025",
+    },
+  ],
+  experience: [
+    {
+      title: "Full Stack Developer",
+      company: "Software Studio",
+      date: "2024 - Present",
+      description:
+        "Built and shipped reliable web applications with React, Node.js, and MongoDB for growing teams.",
+    },
+    {
+      title: "Web Developer Intern",
+      company: "Digital Labs",
+      date: "2023 - 2024",
+      description:
+        "Developed responsive interfaces and reusable components while working closely with senior engineers.",
+    },
+  ],
+  skills: [
+    "React",
+    "JavaScript",
+    "Node.js",
+    "Express",
+    "MongoDB",
+    "Tailwind CSS",
+  ],
+  projects: [
+    {
+      name: "Portfolio Platform",
+      description:
+        "A responsive portfolio platform for presenting projects and professional experience.",
+    },
+    {
+      name: "Resume Builder",
+      description:
+        "A guided resume builder with live templates, structured editing, and PDF export.",
+    },
+  ],
+  certifications: [
+    { name: "Full Stack Web Development" },
+    { name: "JavaScript Development" },
+  ],
+  achievements: [
+    { title: "Built multiple production-ready web applications" },
+    { title: "Completed competitive coding challenges" },
+  ],
+};
+
+const demoResumeLinks = {
+  linkedin: "linkedin.com/in/alex-morgan",
+  github: "github.com/alex-morgan",
+  portfolio: "alex-morgan.dev",
+};
+
+const hasMeaningfulResumeData = (data = {}, links = {}) =>
+  Boolean(
+    data.name ||
+    data.role ||
+    data.email ||
+    data.phone ||
+    data.location ||
+    data.summary ||
+    safeArray(data.education).length ||
+    safeArray(data.experience).length ||
+    safeArray(data.skills).length ||
+    safeArray(data.projects).length ||
+    safeArray(data.certifications).length ||
+    safeArray(data.achievements).length ||
+    links.linkedin ||
+    links.github ||
+    links.portfolio,
+  );
+
 const getInitials = (name = "") => {
   const words = name.trim().split(/\s+/).filter(Boolean);
 
@@ -967,28 +1053,16 @@ function CreativeTemplate({ data, links }) {
 
 export default function ResumeMockup({
   style = "modern",
-
-  data = {
-    name: "",
-    role: "",
-    email: "",
-    phone: "",
-    location: "",
-    summary: "",
-    education: [],
-    experience: [],
-    skills: [],
-    projects: [],
-    certifications: [],
-    achievements: [],
-  },
-
-  links = {
-    linkedin: "",
-    github: "",
-    portfolio: "",
-  },
+  mode = "default",
+  data = {},
+  links = {},
 }) {
+  const normalizedStyle = style?.toLowerCase?.() || "modern";
+  const useDemoData =
+    mode === "template" && !hasMeaningfulResumeData(data, links);
+  const resumeData = useDemoData ? demoResumeData : data;
+  const resumeLinks = useDemoData ? demoResumeLinks : links;
+
   return (
     <div
       className="mx-auto w-full max-w-[500px] overflow-hidden bg-white shadow-[0_20px_60px_rgba(0,0,0,0.15)]"
@@ -996,13 +1070,21 @@ export default function ResumeMockup({
         aspectRatio: "210 / 297",
       }}
     >
-      {style === "modern" && <ModernTemplate data={data} links={links} />}
+      {normalizedStyle === "modern" && (
+        <ModernTemplate data={resumeData} links={resumeLinks} />
+      )}
 
-      {style === "classic" && <ClassicTemplate data={data} links={links} />}
+      {normalizedStyle === "classic" && (
+        <ClassicTemplate data={resumeData} links={resumeLinks} />
+      )}
 
-      {style === "minimal" && <MinimalTemplate data={data} links={links} />}
+      {normalizedStyle === "minimal" && (
+        <MinimalTemplate data={resumeData} links={resumeLinks} />
+      )}
 
-      {style === "creative" && <CreativeTemplate data={data} links={links} />}
+      {normalizedStyle === "creative" && (
+        <CreativeTemplate data={resumeData} links={resumeLinks} />
+      )}
     </div>
   );
 }
