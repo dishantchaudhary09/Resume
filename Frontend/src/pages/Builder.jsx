@@ -15,7 +15,7 @@ import { useDispatch, useSelector } from "react-redux";
 import Navbar from "../components/Navbar";
 import MouseSpotlight from "../components/MouseSpotlight";
 import BuilderPreview from "../components/BuilderPreview";
-import PDFExportButton from "../components/PDFExportButton";
+import PDFExportButton from "../components/PdfExportButton";
 
 import {
   updatePersonal,
