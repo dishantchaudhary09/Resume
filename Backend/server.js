@@ -16,13 +16,28 @@ dotenv.config();
 
 const app = express();
 
+const allowedOrigins = [
+  ...(process.env.FRONTEND_URL || "").split(","),
+  "http://localhost:5173",
+  "https://resume-1-rvr7.onrender.com",
+]
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 // Connect Database
 connectDB();
 
 // CORS
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error("Origin is not allowed by CORS"));
+    },
     credentials: true,
   }),
 );
