@@ -128,7 +128,10 @@ function Features() {
   ];
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#FAF9F4] text-[#111111]">
+    <main className="relative min-h-screen overflow-hidden bg-[#FAF9F4] pt-16 text-[#111111]">
+      {/* =========================================================
+          FIXED NAVBAR
+      ========================================================= */}
       <Navbar />
 
       {/* =========================================================
@@ -139,16 +142,26 @@ function Features() {
       {/* =========================================================
           HERO
       ========================================================= */}
-      <section className="relative flex h-[calc(100svh-64px)] flex-col justify-between overflow-hidden bg-[#191C21] px-5 pt-8 text-[#FAF9F4] lg:px-10 lg:pt-10">
+      <section className="relative flex min-h-[calc(100svh-64px)] flex-col justify-between overflow-hidden bg-[#191C21] px-5 py-8 text-[#FAF9F4] lg:px-10 lg:py-10">
         {/* Ambient background */}
         <div className="pointer-events-none absolute -right-40 -top-40 h-[600px] w-[600px] rounded-full bg-white/[0.025] blur-3xl" />
 
-        <div className="relative mx-auto flex h-full w-full max-w-[1400px] flex-col justify-between box-border pb-8 lg:pb-10">
-          {/* Top label */}
+        <div className="relative mx-auto flex min-h-[calc(100svh-144px)] w-full max-w-[1400px] flex-col justify-between">
+          {/* =====================================================
+              TOP LABEL
+          ===================================================== */}
           <motion.div
-            initial={{ opacity: 0, y: -15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            initial={{
+              opacity: 0,
+              y: -15,
+            }}
+            animate={{
+              opacity: 1,
+              y: 0,
+            }}
+            transition={{
+              duration: 0.6,
+            }}
             className="flex items-center gap-4"
           >
             <span className="h-px w-10 bg-[#FAF9F4]/40" />
@@ -158,11 +171,22 @@ function Features() {
             </p>
           </motion.div>
 
-          {/* Main content */}
+          {/* =====================================================
+              MAIN CONTENT
+          ===================================================== */}
           <motion.div
-            initial={{ opacity: 0, y: 35 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.1 }}
+            initial={{
+              opacity: 0,
+              y: 35,
+            }}
+            animate={{
+              opacity: 1,
+              y: 0,
+            }}
+            transition={{
+              duration: 0.8,
+              delay: 0.1,
+            }}
             className="max-w-6xl"
           >
             <h1 className="text-5xl font-medium leading-[0.98] tracking-tight sm:text-6xl lg:text-[7rem]">
@@ -177,10 +201,18 @@ function Features() {
             </p>
           </motion.div>
 
-          {/* Bottom stats */}
+          {/* =====================================================
+              BOTTOM STATS
+          ===================================================== */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{
+              opacity: 0,
+              y: 20,
+            }}
+            animate={{
+              opacity: 1,
+              y: 0,
+            }}
             transition={{
               delay: 0.35,
               duration: 0.7,
@@ -220,10 +252,16 @@ function Features() {
           </motion.div>
         </div>
 
-        {/* Scroll indicator */}
+        {/* =====================================================
+            SCROLL INDICATOR
+        ===================================================== */}
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{
+            opacity: 0,
+          }}
+          animate={{
+            opacity: 1,
+          }}
           transition={{
             delay: 1,
             duration: 0.6,

@@ -1,114 +1,1008 @@
-import { useSelector } from "react-redux";
+import {
+  FaLinkedin,
+  FaGithub,
+  FaGlobe,
+  FaPhone,
+  FaEnvelope,
+  FaLocationDot,
+} from "react-icons/fa6";
 
-const SectionTitle = ({ children }) => (
-  <div className="mb-2 flex items-center gap-2">
-    <div className="h-px flex-1 bg-[#DCDCDC]" />
-    <h3 className="text-[7px] font-bold uppercase tracking-[0.16em] text-[#444]">
-      {children}
-    </h3>
-    <div className="h-px flex-1 bg-[#DCDCDC]" />
-  </div>
-);
+/* =========================================================
+   HELPERS
+========================================================= */
 
-const Content = ({ title, children }) => (
-  <div className="mt-4">
-    <SectionTitle>{title}</SectionTitle>
-    {children}
-  </div>
-);
-
-const Experience = ({ resume, compact = false }) => {
-  const experience = resume?.experience?.length
-    ? resume.experience
-    : [{ jobTitle: "Full Stack Developer", company: "Digital Labs", description: "Developed responsive web applications using React and Node.js.", startDate: "2024", endDate: "Present" }];
-
-  return (
-  <Content title="Experience">
-    <div className="space-y-3">
-      {experience.slice(0, 2).map((item, index) => (
-      <div key={index}>
-        <div className="flex justify-between">
-          <div className="text-[7px] font-semibold">{item.jobTitle || item.position || "Job Position"}</div>
-          {!compact && <span className="text-[5.5px] text-[#888]">{item.startDate} {item.startDate && item.endDate ? "-" : ""} {item.endDate}</span>}
-        </div>
-        <div className="text-[6px] text-[#777]">{item.company || "Company"}</div>
-        <p className="mt-1 text-[6px] leading-[1.5] text-[#666]">
-          {item.description || "Your experience description will appear here."}
-        </p>
-      </div>
-      ))}
-    </div>
-  </Content>
-  );
+const getUrl = (url) => {
+  if (!url) return "#";
+  return url.startsWith("http") ? url : `https://${url}`;
 };
 
-const Projects = ({ resume }) => (
-  <Content title="Projects">
-    <div className="space-y-2 text-[6px] leading-[1.5] text-[#666]">
-      {(resume?.projects?.length ? resume.projects : [{ name: "Project Management Platform", description: "A collaborative team workflow platform." }, { name: "Personal Finance Dashboard", description: "A responsive expense tracking dashboard." }]).slice(0, 2).map((project, index) => (
-        <div key={index}><strong className="text-[#333]">{project.name || project.title || "Project Name"}</strong> - {project.description || "Project description"}</div>
-      ))}
-    </div>
-  </Content>
-);
+const safeArray = (value) => (Array.isArray(value) ? value : []);
 
-const Skills = ({ resume }) => (
-  <Content title="Skills">
-    <div className="flex flex-wrap gap-1.5">
-      {(resume?.skills?.length ? resume.skills : ['React', 'JavaScript', 'Node.js', 'Express', 'MongoDB', 'Git', 'REST API', 'Tailwind CSS']).map((skill, index) => (
-        <span key={index} className="rounded-full bg-[#F1F1EF] px-2 py-1 text-[5.5px] text-[#555]">{typeof skill === "string" ? skill : skill.name}</span>
-      ))}
-    </div>
-  </Content>
-);
+const getInitials = (name = "") => {
+  const words = name.trim().split(/\s+/).filter(Boolean);
 
-function ModernTemplate({ resume }) {
-  const personal = resume?.personal || {};
+  if (!words.length) return "RF";
+
+  return words
+    .map((word) => word[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+};
+
+/* =========================================================
+   SOCIAL LINKS
+========================================================= */
+
+function SocialLinks({ links = {}, dark = false }) {
+  const iconClass = dark
+    ? "text-white hover:text-neutral-300"
+    : "text-neutral-600 hover:text-black";
+
   return (
-    <div className="min-h-[520px] bg-white p-5 text-[#222]">
-      <div className="border-b border-[#D9D9D9] pb-3">
-        <div className="text-[17px] font-bold tracking-tight">{personal.fullName || "Your Name"}</div>
-        <div className="mt-1 text-[6px] text-[#777]">{[personal.email, personal.phone, personal.location].filter(Boolean).join(" - ") || "email@example.com - Phone - Location"}</div>
-      </div>
-      <Content title="Profile"><p className="text-[6.5px] leading-[1.55] text-[#666]">{personal.summary || "Your professional summary will appear here."}</p></Content>
-      <Experience resume={resume} />
-      <Projects resume={resume} />
-      <Content title="Education"><div className="text-[7px] font-semibold">{resume?.education?.[0]?.degree || "B.Tech in Computer Science"}</div><div className="text-[6px] text-[#777]">{resume?.education?.[0]?.institution || "Your institution"}</div></Content>
-      <Skills resume={resume} />
-      <Content title="Achievements"><div className="space-y-1 text-[6px] text-[#666]">• Hackathon finalist<br />• Open-source contributor</div></Content>
+    <div className="flex items-center gap-2">
+      {links.linkedin && (
+        <a
+          href={getUrl(links.linkedin)}
+          target="_blank"
+          rel="noreferrer"
+          className={iconClass}
+          aria-label="LinkedIn"
+        >
+          <FaLinkedin size={10} />
+        </a>
+      )}
+
+      {links.github && (
+        <a
+          href={getUrl(links.github)}
+          target="_blank"
+          rel="noreferrer"
+          className={iconClass}
+          aria-label="GitHub"
+        >
+          <FaGithub size={10} />
+        </a>
+      )}
+
+      {links.portfolio && (
+        <a
+          href={getUrl(links.portfolio)}
+          target="_blank"
+          rel="noreferrer"
+          className={iconClass}
+          aria-label="Portfolio"
+        >
+          <FaGlobe size={10} />
+        </a>
+      )}
     </div>
   );
 }
 
-function ClassicTemplate({ resume }) {
+/* =========================================================
+   CONTACT
+========================================================= */
+
+function Contact({ data, dark = false }) {
+  const text = dark ? "text-neutral-300" : "text-neutral-500";
+
   return (
-    <div className="min-h-[520px] bg-white p-6 text-[#222]">
-      <div className="text-center"><div className="text-[18px] font-bold">{resume?.personal?.fullName || "Your Name"}</div><div className="mt-1 text-[5.5px] text-[#777]">{resume?.personal?.email || "email@example.com"}</div></div>
-      <div className="mt-4 border-t border-[#222] pt-3"><Content title="Profile"><p className="text-[6px] leading-[1.55] text-[#666]">{resume?.personal?.summary || "Your professional summary will appear here."}</p></Content><Experience resume={resume} compact /><Content title="Education"><div className="text-[7px] font-bold">{resume?.education?.[0]?.degree || "Bachelor of Technology"}</div><div className="text-[6px] text-[#777]">{resume?.education?.[0]?.institution || "Your institution"}</div></Content><Projects resume={resume} /><Skills resume={resume} /></div>
+    <div
+      className={`flex flex-wrap items-center gap-x-3 gap-y-1 text-[6px] ${text}`}
+    >
+      {data.email && (
+        <span className="flex items-center gap-1">
+          <FaEnvelope size={6} />
+          {data.email}
+        </span>
+      )}
+
+      {data.phone && (
+        <span className="flex items-center gap-1">
+          <FaPhone size={6} />
+          {data.phone}
+        </span>
+      )}
+
+      {data.location && (
+        <span className="flex items-center gap-1">
+          <FaLocationDot size={6} />
+          {data.location}
+        </span>
+      )}
     </div>
   );
 }
 
-function MinimalTemplate({ resume }) {
+/* =========================================================
+   SECTION TITLE
+========================================================= */
+
+function Title({ children, line = true }) {
   return (
-    <div className="min-h-[520px] bg-white p-6 text-[#222]"><div className="mb-5"><div className="text-[20px] font-semibold tracking-tight">{resume?.personal?.fullName || "Your Name"}</div><div className="mt-1 text-[5.5px] text-[#888]">{resume?.personal?.email || "email@example.com"}</div></div><Content title="Profile"><p className="text-[6px] leading-[1.6] text-[#666]">{resume?.personal?.summary || "Your professional summary will appear here."}</p></Content><Experience resume={resume} compact /><Projects resume={resume} /><Content title="Education"><div className="text-[6px] text-[#666]">{resume?.education?.[0]?.degree || "Your education"}</div></Content><Skills resume={resume} /></div>
+    <div className="mb-1.5">
+      <h3 className="text-[7px] font-bold tracking-[0.13em] text-neutral-800 uppercase">
+        {children}
+      </h3>
+
+      {line && <div className="mt-1 h-px bg-neutral-200" />}
+    </div>
   );
 }
 
-function CreativeTemplate({ resume }) {
+/* =========================================================
+   MODERN
+========================================================= */
+
+function ModernTemplate({ data, links }) {
+  const experience = safeArray(data.experience);
+  const projects = safeArray(data.projects);
+  const education = safeArray(data.education);
+  const skills = safeArray(data.skills);
+  const certifications = safeArray(data.certifications);
+  const achievements = safeArray(data.achievements);
+
   return (
-    <div className="grid min-h-[520px] grid-cols-[34%_66%] bg-white"><aside className="bg-[#202124] p-5 text-white"><div className="mb-5 flex h-10 w-10 items-center justify-center rounded-full bg-white text-[10px] font-bold text-[#222]">{(resume?.personal?.fullName || "YN").split(" ").map((word) => word[0]).slice(0, 2).join("")}</div><div className="text-[14px] font-bold leading-tight">{resume?.personal?.fullName || "Your Name"}</div><div className="mt-5"><div className="mb-2 text-[5.5px] uppercase tracking-[0.18em] text-[#999]">Contact</div><div className="space-y-1 text-[5.5px] text-[#DDD]">{resume?.personal?.email || "email@example.com"}<br />{resume?.personal?.phone || "Phone"}<br />{resume?.personal?.location || "Location"}</div></div></aside><main className="p-5 text-[#222]"><Content title="Profile"><p className="text-[6px] leading-[1.55] text-[#666]">{resume?.personal?.summary || "Your professional summary will appear here."}</p></Content><Experience resume={resume} compact /><Projects resume={resume} /><Content title="Education"><div className="text-[6px] text-[#666]">{resume?.education?.[0]?.degree || "Your education"}</div></Content></main></div>
+    <div className="h-full overflow-hidden bg-white px-[25px] py-[21px] text-neutral-800">
+      <header className="border-b border-neutral-200 pb-3">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <h1 className="text-[20px] font-bold tracking-[-0.04em]">
+              {data.name || "Your Name"}
+            </h1>
+
+            {data.role && (
+              <p className="mt-0.5 text-[7px] font-medium tracking-[0.12em] text-neutral-500 uppercase">
+                {data.role}
+              </p>
+            )}
+          </div>
+
+          <SocialLinks links={links} />
+        </div>
+
+        <div className="mt-2.5">
+          <Contact data={data} />
+        </div>
+      </header>
+
+      <main className="mt-3.5">
+        {data.summary && (
+          <section>
+            <Title>Profile</Title>
+
+            <p className="text-[6.7px] leading-[1.45] text-neutral-600">
+              {data.summary}
+            </p>
+          </section>
+        )}
+
+        {experience.length > 0 && (
+          <section className={data.summary ? "mt-3" : ""}>
+            <Title>Experience</Title>
+
+            <div className="space-y-2.5">
+              {experience.map((item, index) => (
+                <div key={index}>
+                  <div className="flex justify-between gap-3">
+                    <div className="min-w-0">
+                      <h4 className="text-[7px] font-bold">
+                        {item.title || "Position"}
+                      </h4>
+
+                      {item.company && (
+                        <p className="text-[6px] text-neutral-500">
+                          {item.company}
+                        </p>
+                      )}
+                    </div>
+
+                    {item.date && (
+                      <span className="shrink-0 text-[5.8px] text-neutral-400">
+                        {item.date}
+                      </span>
+                    )}
+                  </div>
+
+                  {item.description && (
+                    <p className="mt-0.5 text-[6.2px] leading-[1.4] text-neutral-600">
+                      {item.description}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {projects.length > 0 && (
+          <section className="mt-3">
+            <Title>Projects</Title>
+
+            <div className="grid grid-cols-2 gap-3">
+              {projects.map((item, index) => (
+                <div key={index}>
+                  <h4 className="text-[7px] font-bold">
+                    {item.name || "Project"}
+                  </h4>
+
+                  {item.description && (
+                    <p className="mt-0.5 text-[6px] leading-[1.4] text-neutral-600">
+                      {item.description}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {education.length > 0 && (
+          <section className="mt-3">
+            <Title>Education</Title>
+
+            {education.map((item, index) => (
+              <div key={index} className="flex justify-between gap-3">
+                <div className="min-w-0">
+                  <h4 className="text-[7px] font-bold">
+                    {item.degree || "Degree"}
+                  </h4>
+
+                  {item.institute && (
+                    <p className="text-[6px] text-neutral-500">
+                      {item.institute}
+                    </p>
+                  )}
+                </div>
+
+                {item.date && (
+                  <span className="shrink-0 text-[5.8px] text-neutral-400">
+                    {item.date}
+                  </span>
+                )}
+              </div>
+            ))}
+          </section>
+        )}
+
+        {(skills.length > 0 ||
+          certifications.length > 0 ||
+          achievements.length > 0) && (
+          <div className="mt-3 grid grid-cols-3 gap-4">
+            {skills.length > 0 && (
+              <section>
+                <Title>Skills</Title>
+
+                <div className="flex flex-wrap gap-1">
+                  {skills.map((skill, index) => (
+                    <span
+                      key={index}
+                      className="rounded bg-neutral-100 px-1.5 py-0.5 text-[5.7px] text-neutral-600"
+                    >
+                      {typeof skill === "string" ? skill : skill.name}
+                    </span>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {certifications.length > 0 && (
+              <section>
+                <Title>Certifications</Title>
+
+                <div className="space-y-1">
+                  {certifications.map((item, index) => (
+                    <p key={index} className="text-[6px] text-neutral-600">
+                      {typeof item === "string" ? item : item.name}
+                    </p>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {achievements.length > 0 && (
+              <section>
+                <Title>Achievements</Title>
+
+                <div className="space-y-1">
+                  {achievements.map((item, index) => (
+                    <p
+                      key={index}
+                      className="text-[6px] leading-[1.3] text-neutral-600"
+                    >
+                      • {typeof item === "string" ? item : item.title}
+                    </p>
+                  ))}
+                </div>
+              </section>
+            )}
+          </div>
+        )}
+      </main>
+    </div>
   );
 }
 
-function ResumeMockup({ style = "modern", resume: resumeProp }) {
-  const resumeState = useSelector((state) => state.resume);
-  const resume = resumeProp || resumeState;
+/* =========================================================
+   CLASSIC
+========================================================= */
 
-  if (style === "classic") return <ClassicTemplate resume={resume} />;
-  if (style === "minimal") return <MinimalTemplate resume={resume} />;
-  if (style === "creative") return <CreativeTemplate resume={resume} />;
-  return <ModernTemplate resume={resume} />;
+function ClassicTemplate({ data, links }) {
+  const experience = safeArray(data.experience);
+  const projects = safeArray(data.projects);
+  const education = safeArray(data.education);
+  const skills = safeArray(data.skills);
+  const certifications = safeArray(data.certifications);
+  const achievements = safeArray(data.achievements);
+
+  return (
+    <div className="h-full overflow-hidden bg-[#fffdf9] px-[27px] py-[22px] text-neutral-800">
+      <header className="text-center">
+        <h1 className="font-serif text-[19px] font-semibold">
+          {data.name || "Your Name"}
+        </h1>
+
+        {data.role && (
+          <p className="mt-0.5 text-[6.5px] tracking-[0.16em] text-neutral-500 uppercase">
+            {data.role}
+          </p>
+        )}
+
+        <div className="mt-2 flex justify-center">
+          <Contact data={data} />
+        </div>
+
+        <div className="mt-1.5 flex justify-center">
+          <SocialLinks links={links} />
+        </div>
+
+        <div className="mt-2.5 border-t border-neutral-400" />
+      </header>
+
+      <main className="mt-3">
+        {data.summary && (
+          <section>
+            <Title>Professional Summary</Title>
+
+            <p className="text-[6.4px] leading-[1.45] text-neutral-600">
+              {data.summary}
+            </p>
+          </section>
+        )}
+
+        {experience.length > 0 && (
+          <section className="mt-3">
+            <Title>Professional Experience</Title>
+
+            <div className="space-y-2.5">
+              {experience.map((item, index) => (
+                <div key={index}>
+                  <div className="flex justify-between gap-3">
+                    <div className="min-w-0">
+                      <h4 className="text-[7px] font-bold">
+                        {item.title || "Position"}
+                      </h4>
+
+                      {item.company && (
+                        <p className="text-[6px] italic text-neutral-500">
+                          {item.company}
+                        </p>
+                      )}
+                    </div>
+
+                    {item.date && (
+                      <span className="shrink-0 text-[5.8px] text-neutral-500">
+                        {item.date}
+                      </span>
+                    )}
+                  </div>
+
+                  {item.description && (
+                    <p className="mt-0.5 text-[6.1px] leading-[1.4] text-neutral-600">
+                      {item.description}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {education.length > 0 && (
+          <section className="mt-3">
+            <Title>Education</Title>
+
+            {education.map((item, index) => (
+              <div key={index} className="flex justify-between gap-3">
+                <div className="min-w-0">
+                  <h4 className="text-[7px] font-bold">
+                    {item.degree || "Degree"}
+                  </h4>
+
+                  {item.institute && (
+                    <p className="text-[6px] text-neutral-500">
+                      {item.institute}
+                    </p>
+                  )}
+                </div>
+
+                {item.date && (
+                  <span className="shrink-0 text-[5.8px] text-neutral-500">
+                    {item.date}
+                  </span>
+                )}
+              </div>
+            ))}
+          </section>
+        )}
+
+        {projects.length > 0 && (
+          <section className="mt-3">
+            <Title>Selected Projects</Title>
+
+            <div className="grid grid-cols-2 gap-4">
+              {projects.map((item, index) => (
+                <div key={index}>
+                  <h4 className="text-[7px] font-bold">
+                    {item.name || "Project"}
+                  </h4>
+
+                  {item.description && (
+                    <p className="mt-0.5 text-[6px] leading-[1.4] text-neutral-600">
+                      {item.description}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {(skills.length > 0 ||
+          certifications.length > 0 ||
+          achievements.length > 0) && (
+          <div className="mt-3 grid grid-cols-3 gap-4">
+            {skills.length > 0 && (
+              <section>
+                <Title>Skills</Title>
+
+                <p className="text-[5.9px] leading-[1.7] text-neutral-600">
+                  {skills
+                    .map((skill) =>
+                      typeof skill === "string" ? skill : skill.name,
+                    )
+                    .join(" • ")}
+                </p>
+              </section>
+            )}
+
+            {certifications.length > 0 && (
+              <section>
+                <Title>Certifications</Title>
+
+                <div className="space-y-1">
+                  {certifications.map((item, index) => (
+                    <p key={index} className="text-[6px] text-neutral-600">
+                      {typeof item === "string" ? item : item.name}
+                    </p>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {achievements.length > 0 && (
+              <section>
+                <Title>Achievements</Title>
+
+                <div className="space-y-1">
+                  {achievements.map((item, index) => (
+                    <p key={index} className="text-[6px] text-neutral-600">
+                      • {typeof item === "string" ? item : item.title}
+                    </p>
+                  ))}
+                </div>
+              </section>
+            )}
+          </div>
+        )}
+      </main>
+    </div>
+  );
 }
 
-export default ResumeMockup;
+/* =========================================================
+   MINIMAL
+========================================================= */
+
+function MinimalTemplate({ data, links }) {
+  const experience = safeArray(data.experience);
+  const projects = safeArray(data.projects);
+  const education = safeArray(data.education);
+  const skills = safeArray(data.skills);
+  const certifications = safeArray(data.certifications);
+  const achievements = safeArray(data.achievements);
+
+  return (
+    <div className="h-full overflow-hidden bg-white px-[30px] py-[24px] text-neutral-800">
+      <header>
+        <div className="flex justify-between gap-4">
+          <div className="min-w-0">
+            <h1 className="text-[21px] font-light tracking-[-0.05em]">
+              {data.name || "Your Name"}
+            </h1>
+
+            {data.role && (
+              <p className="mt-0.5 text-[6.5px] tracking-[0.18em] text-neutral-400 uppercase">
+                {data.role}
+              </p>
+            )}
+          </div>
+
+          <SocialLinks links={links} />
+        </div>
+
+        <div className="mt-3 border-t border-neutral-200 pt-2">
+          <Contact data={data} />
+        </div>
+      </header>
+
+      <main className="mt-4">
+        {data.summary && (
+          <section>
+            <h3 className="text-[6.5px] tracking-[0.2em] text-neutral-400 uppercase">
+              About
+            </h3>
+
+            <p className="mt-1.5 text-[6.5px] leading-[1.55] text-neutral-500">
+              {data.summary}
+            </p>
+          </section>
+        )}
+
+        {experience.length > 0 && (
+          <section className="mt-3.5">
+            <h3 className="text-[6.5px] tracking-[0.2em] text-neutral-400 uppercase">
+              Experience
+            </h3>
+
+            <div className="mt-2 space-y-2.5">
+              {experience.map((item, index) => (
+                <div key={index} className="grid grid-cols-[1fr_auto] gap-5">
+                  <div>
+                    <h4 className="text-[7px] font-medium">
+                      {item.title || "Position"}
+                    </h4>
+
+                    {item.company && (
+                      <p className="mt-0.5 text-[6px] text-neutral-400">
+                        {item.company}
+                      </p>
+                    )}
+
+                    {item.description && (
+                      <p className="mt-0.5 text-[6px] leading-[1.45] text-neutral-500">
+                        {item.description}
+                      </p>
+                    )}
+                  </div>
+
+                  {item.date && (
+                    <span className="text-[5.8px] text-neutral-400">
+                      {item.date}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {(projects.length > 0 || education.length > 0) && (
+          <div className="mt-3.5 grid grid-cols-2 gap-6">
+            {projects.length > 0 && (
+              <section>
+                <h3 className="text-[6.5px] tracking-[0.2em] text-neutral-400 uppercase">
+                  Projects
+                </h3>
+
+                <div className="mt-2 space-y-2">
+                  {projects.map((item, index) => (
+                    <div key={index}>
+                      <h4 className="text-[7px] font-medium">
+                        {item.name || "Project"}
+                      </h4>
+
+                      {item.description && (
+                        <p className="mt-0.5 text-[6px] leading-[1.45] text-neutral-500">
+                          {item.description}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {education.length > 0 && (
+              <section>
+                <h3 className="text-[6.5px] tracking-[0.2em] text-neutral-400 uppercase">
+                  Education
+                </h3>
+
+                <div className="mt-2">
+                  {education.map((item, index) => (
+                    <div
+                      key={index}
+                      className="grid grid-cols-[1fr_auto] gap-3"
+                    >
+                      <div>
+                        <h4 className="text-[7px] font-medium">
+                          {item.degree || "Degree"}
+                        </h4>
+
+                        {item.institute && (
+                          <p className="mt-0.5 text-[6px] text-neutral-400">
+                            {item.institute}
+                          </p>
+                        )}
+                      </div>
+
+                      {item.date && (
+                        <span className="text-[5.8px] text-neutral-400">
+                          {item.date}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+          </div>
+        )}
+
+        {(skills.length > 0 ||
+          certifications.length > 0 ||
+          achievements.length > 0) && (
+          <div className="mt-3.5 grid grid-cols-3 gap-5">
+            {skills.length > 0 && (
+              <section>
+                <h3 className="text-[6.5px] tracking-[0.2em] text-neutral-400 uppercase">
+                  Skills
+                </h3>
+
+                <div className="mt-1.5 flex flex-wrap gap-x-2 gap-y-1">
+                  {skills.map((skill, index) => (
+                    <span key={index} className="text-[6px] text-neutral-500">
+                      {typeof skill === "string" ? skill : skill.name}
+                    </span>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {certifications.length > 0 && (
+              <section>
+                <h3 className="text-[6.5px] tracking-[0.2em] text-neutral-400 uppercase">
+                  Certifications
+                </h3>
+
+                <div className="mt-1.5 space-y-1">
+                  {certifications.map((item, index) => (
+                    <p key={index} className="text-[6px] text-neutral-500">
+                      {typeof item === "string" ? item : item.name}
+                    </p>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {achievements.length > 0 && (
+              <section>
+                <h3 className="text-[6.5px] tracking-[0.2em] text-neutral-400 uppercase">
+                  Achievements
+                </h3>
+
+                <div className="mt-1.5 space-y-1">
+                  {achievements.map((item, index) => (
+                    <p key={index} className="text-[6px] text-neutral-500">
+                      {typeof item === "string" ? item : item.title}
+                    </p>
+                  ))}
+                </div>
+              </section>
+            )}
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
+
+/* =========================================================
+   CREATIVE
+========================================================= */
+
+function CreativeTemplate({ data, links }) {
+  const experience = safeArray(data.experience);
+  const projects = safeArray(data.projects);
+  const education = safeArray(data.education);
+  const skills = safeArray(data.skills);
+  const certifications = safeArray(data.certifications);
+  const achievements = safeArray(data.achievements);
+
+  return (
+    <div className="flex h-full overflow-hidden bg-white text-neutral-800">
+      <aside className="w-[28%] shrink-0 bg-[#181818] px-[13px] py-[21px] text-white">
+        <div>
+          <div className="flex h-[38px] w-[38px] items-center justify-center rounded-full border border-neutral-600 text-[11px] font-semibold">
+            {getInitials(data.name)}
+          </div>
+
+          <h1 className="mt-3 text-[12px] font-semibold leading-tight">
+            {data.name || "Your Name"}
+          </h1>
+
+          {data.role && (
+            <p className="mt-1 text-[5.8px] tracking-[0.1em] text-neutral-400 uppercase">
+              {data.role}
+            </p>
+          )}
+        </div>
+
+        {(data.email || data.phone || data.location) && (
+          <div className="mt-5">
+            <h3 className="text-[6px] tracking-[0.15em] text-neutral-500 uppercase">
+              Contact
+            </h3>
+
+            <div className="mt-2 space-y-2 text-[5.5px] text-neutral-300">
+              {data.email && (
+                <p className="flex items-start gap-1.5">
+                  <FaEnvelope size={6} className="mt-0.5 shrink-0" />
+                  <span className="break-all">{data.email}</span>
+                </p>
+              )}
+
+              {data.phone && (
+                <p className="flex items-center gap-1.5">
+                  <FaPhone size={6} />
+                  {data.phone}
+                </p>
+              )}
+
+              {data.location && (
+                <p className="flex items-start gap-1.5">
+                  <FaLocationDot size={6} className="mt-0.5 shrink-0" />
+                  {data.location}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {(links.linkedin || links.github || links.portfolio) && (
+          <div className="mt-5">
+            <h3 className="text-[6px] tracking-[0.15em] text-neutral-500 uppercase">
+              Connect
+            </h3>
+
+            <div className="mt-2">
+              <SocialLinks links={links} dark />
+            </div>
+          </div>
+        )}
+
+        {skills.length > 0 && (
+          <div className="mt-5">
+            <h3 className="text-[6px] tracking-[0.15em] text-neutral-500 uppercase">
+              Skills
+            </h3>
+
+            <div className="mt-2 space-y-1.5">
+              {skills.map((skill, index) => (
+                <p key={index} className="text-[5.5px] text-neutral-300">
+                  {typeof skill === "string" ? skill : skill.name}
+                </p>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {certifications.length > 0 && (
+          <div className="mt-5">
+            <h3 className="text-[6px] tracking-[0.15em] text-neutral-500 uppercase">
+              Certifications
+            </h3>
+
+            <div className="mt-2 space-y-1">
+              {certifications.map((item, index) => (
+                <p
+                  key={index}
+                  className="text-[5.5px] leading-[1.3] text-neutral-300"
+                >
+                  {typeof item === "string" ? item : item.name}
+                </p>
+              ))}
+            </div>
+          </div>
+        )}
+      </aside>
+
+      <main className="w-[72%] px-[17px] py-[21px]">
+        {data.summary && (
+          <section>
+            <h3 className="text-[7px] font-bold tracking-[0.13em] text-neutral-400 uppercase">
+              Profile
+            </h3>
+
+            <p className="mt-1.5 text-[6.5px] leading-[1.5] text-neutral-600">
+              {data.summary}
+            </p>
+          </section>
+        )}
+
+        {experience.length > 0 && (
+          <section className="mt-4">
+            <h3 className="text-[7px] font-bold tracking-[0.13em] text-neutral-400 uppercase">
+              Experience
+            </h3>
+
+            <div className="mt-2.5 space-y-3">
+              {experience.map((item, index) => (
+                <div key={index} className="border-l border-neutral-200 pl-2.5">
+                  <div className="flex justify-between gap-2">
+                    <div>
+                      <h4 className="text-[7px] font-bold">
+                        {item.title || "Position"}
+                      </h4>
+
+                      {item.company && (
+                        <p className="text-[6px] text-neutral-400">
+                          {item.company}
+                        </p>
+                      )}
+                    </div>
+
+                    {item.date && (
+                      <span className="text-[5.5px] text-neutral-400">
+                        {item.date}
+                      </span>
+                    )}
+                  </div>
+
+                  {item.description && (
+                    <p className="mt-0.5 text-[6px] leading-[1.45] text-neutral-600">
+                      {item.description}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {projects.length > 0 && (
+          <section className="mt-4">
+            <h3 className="text-[7px] font-bold tracking-[0.13em] text-neutral-400 uppercase">
+              Projects
+            </h3>
+
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              {projects.map((item, index) => (
+                <div
+                  key={index}
+                  className="rounded border border-neutral-200 p-2"
+                >
+                  <h4 className="text-[7px] font-bold">
+                    {item.name || "Project"}
+                  </h4>
+
+                  {item.description && (
+                    <p className="mt-0.5 text-[5.8px] leading-[1.4] text-neutral-600">
+                      {item.description}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {education.length > 0 && (
+          <section className="mt-4">
+            <h3 className="text-[7px] font-bold tracking-[0.13em] text-neutral-400 uppercase">
+              Education
+            </h3>
+
+            <div className="mt-2">
+              {education.map((item, index) => (
+                <div key={index} className="flex justify-between gap-2">
+                  <div>
+                    <h4 className="text-[7px] font-bold">
+                      {item.degree || "Degree"}
+                    </h4>
+
+                    {item.institute && (
+                      <p className="text-[6px] text-neutral-400">
+                        {item.institute}
+                      </p>
+                    )}
+                  </div>
+
+                  {item.date && (
+                    <span className="text-[5.5px] text-neutral-400">
+                      {item.date}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {achievements.length > 0 && (
+          <section className="mt-4">
+            <h3 className="text-[7px] font-bold tracking-[0.13em] text-neutral-400 uppercase">
+              Achievements
+            </h3>
+
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              {achievements.map((item, index) => (
+                <p key={index} className="text-[6px] text-neutral-600">
+                  • {typeof item === "string" ? item : item.title}
+                </p>
+              ))}
+            </div>
+          </section>
+        )}
+      </main>
+    </div>
+  );
+}
+
+/* =========================================================
+   MAIN COMPONENT
+========================================================= */
+
+export default function ResumeMockup({
+  style = "modern",
+
+  data = {
+    name: "",
+    role: "",
+    email: "",
+    phone: "",
+    location: "",
+    summary: "",
+    education: [],
+    experience: [],
+    skills: [],
+    projects: [],
+    certifications: [],
+    achievements: [],
+  },
+
+  links = {
+    linkedin: "",
+    github: "",
+    portfolio: "",
+  },
+}) {
+  return (
+    <div
+      className="mx-auto w-full max-w-[500px] overflow-hidden bg-white shadow-[0_20px_60px_rgba(0,0,0,0.15)]"
+      style={{
+        aspectRatio: "210 / 297",
+      }}
+    >
+      {style === "modern" && <ModernTemplate data={data} links={links} />}
+
+      {style === "classic" && <ClassicTemplate data={data} links={links} />}
+
+      {style === "minimal" && <MinimalTemplate data={data} links={links} />}
+
+      {style === "creative" && <CreativeTemplate data={data} links={links} />}
+    </div>
+  );
+}

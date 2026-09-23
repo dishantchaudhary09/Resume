@@ -8,24 +8,14 @@ import {
 
 import { motion } from "motion/react";
 
-import {
-  ArrowLeft,
-  Check,
-  ChevronDown,
-  ChevronUp,
-  Download,
-  Eye,
-  FileText,
-  Plus,
-  Save,
-  Trash2,
-  X,
-} from "lucide-react";
+import { ArrowLeft, Check, Eye, Plus, Save, Trash2, X } from "lucide-react";
 
 import { useDispatch, useSelector } from "react-redux";
 
 import Navbar from "../components/Navbar";
-import ResumeMockup from "../components/ResumeMockup";
+import MouseSpotlight from "../components/MouseSpotlight";
+import BuilderPreview from "../components/BuilderPreview";
+import PDFExportButton from "../components/PDFExportButton";
 
 import {
   updatePersonal,
@@ -96,6 +86,10 @@ const emptyAchievement = {
   description: "",
 };
 
+/* =========================================================
+   INPUT
+========================================================= */
+
 function Input({ label, value, onChange, placeholder, type = "text" }) {
   const isDark = useSelector((state) => state.theme.mode === "dark");
 
@@ -123,6 +117,10 @@ function Input({ label, value, onChange, placeholder, type = "text" }) {
     </div>
   );
 }
+
+/* =========================================================
+   TEXTAREA
+========================================================= */
 
 function Textarea({ label, value, onChange, placeholder }) {
   const isDark = useSelector((state) => state.theme.mode === "dark");
@@ -152,6 +150,10 @@ function Textarea({ label, value, onChange, placeholder }) {
   );
 }
 
+/* =========================================================
+   SECTION WRAPPER
+========================================================= */
+
 function SectionWrapper({ title, children }) {
   const isDark = useSelector((state) => state.theme.mode === "dark");
 
@@ -169,7 +171,7 @@ function SectionWrapper({ title, children }) {
 }
 
 /* =========================================================
-   COMPONENT
+   BUILDER
 ========================================================= */
 
 function Builder() {
@@ -177,7 +179,6 @@ function Builder() {
   const navigate = useNavigate();
 
   const { id } = useParams();
-
   const [searchParams] = useSearchParams();
 
   const resume = useSelector((state) => state.resume);
@@ -185,17 +186,9 @@ function Builder() {
 
   const isDark = theme === "dark";
 
-  /* =======================================================
-     TEMPLATE
-  ======================================================= */
-
   const templateFromUrl = searchParams.get("template") || "modern";
 
   const [selectedTemplate, setSelectedTemplate] = useState(templateFromUrl);
-
-  /* =======================================================
-     UI STATE
-  ======================================================= */
 
   const [activeSection, setActiveSection] = useState("personal");
 
@@ -207,6 +200,8 @@ function Builder() {
 
   const [summaryLoading, setSummaryLoading] = useState(false);
 
+  const [skillInput, setSkillInput] = useState("");
+
   /* =======================================================
      TEMPLATE FROM URL
   ======================================================= */
@@ -216,7 +211,6 @@ function Builder() {
 
     if (template) {
       setSelectedTemplate(template);
-
       dispatch(updateTemplate(template));
     }
   }, [searchParams, dispatch]);
@@ -232,14 +226,7 @@ function Builder() {
   }, [id, resume.template]);
 
   /* =======================================================
-     LOAD EXISTING RESUME
-     
-     This assumes your existing Builder already has
-     resume fetching logic through Redux.
-  ======================================================= */
-
-  /* =======================================================
-     SECTION HANDLER
+     SECTIONS
   ======================================================= */
 
   const sections = [
@@ -283,7 +270,6 @@ function Builder() {
 
   const handleTemplateChange = (template) => {
     setSelectedTemplate(template);
-
     dispatch(updateTemplate(template));
   };
 
@@ -349,13 +335,79 @@ function Builder() {
      SKILLS
   ======================================================= */
 
-  const handleSkillsChange = (value) => {
-    const skills = value
+  const addSkills = (value) => {
+    const skillsToAdd = value
       .split(",")
       .map((skill) => skill.trim())
       .filter(Boolean);
 
-    dispatch(updateSkills(skills));
+    if (skillsToAdd.length === 0) {
+      return;
+    }
+
+    const currentSkills = resume.skills || [];
+
+    const newSkills = skillsToAdd.filter(
+      (skill) =>
+        !currentSkills.some(
+          (existingSkill) =>
+            existingSkill.toLowerCase() === skill.toLowerCase(),
+        ),
+    );
+
+    if (newSkills.length > 0) {
+      dispatch(updateSkills([...currentSkills, ...newSkills]));
+    }
+
+    setSkillInput("");
+  };
+
+  const handleSkillInputChange = (value) => {
+    if (value.includes(",")) {
+      addSkills(value);
+      return;
+    }
+
+    setSkillInput(value);
+  };
+
+  const handleSkillKeyDown = (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      addSkills(skillInput);
+      return;
+    }
+
+    if (event.key === ",") {
+      event.preventDefault();
+      addSkills(skillInput);
+      return;
+    }
+
+    if (
+      event.key === "Backspace" &&
+      skillInput.trim() === "" &&
+      resume.skills.length > 0
+    ) {
+      dispatch(updateSkills(resume.skills.slice(0, -1)));
+    }
+  };
+
+  const handleSkillPaste = (event) => {
+    const pastedText = event.clipboardData.getData("text");
+
+    if (pastedText.includes(",")) {
+      event.preventDefault();
+      addSkills(pastedText);
+    }
+  };
+
+  const handleRemoveSkill = (index) => {
+    const updatedSkills = resume.skills.filter(
+      (_, skillIndex) => skillIndex !== index,
+    );
+
+    dispatch(updateSkills(updatedSkills));
   };
 
   /* =======================================================
@@ -482,21 +534,13 @@ function Builder() {
 
       const resumeData = {
         template: selectedTemplate,
-
         personal: resume.personal,
-
         education: resume.education,
-
         experience: resume.experience,
-
         skills: resume.skills,
-
         projects: resume.projects,
-
         certifications: resume.certifications,
-
         achievements: resume.achievements,
-
         socialLinks: resume.socialLinks,
       };
 
@@ -785,38 +829,79 @@ function Builder() {
   );
 
   /* =======================================================
-     SKILLS
+     SKILLS SECTION
   ======================================================= */
 
   const renderSkills = () => (
     <SectionWrapper title="Skills">
-      <Textarea
-        label="Skills"
-        value={resume.skills.join(", ")}
-        onChange={handleSkillsChange}
-        placeholder="React, JavaScript, Node.js, MongoDB, Git"
-      />
+      <div>
+        <label
+          className={`mb-2 block text-xs font-medium ${
+            isDark ? "text-[#D7D7D7]" : "text-[#4B5563]"
+          }`}
+        >
+          Add Skills
+        </label>
 
-      <p
-        className={`mt-2 text-xs ${isDark ? "text-[#777]" : "text-[#6B7280]"}`}
-      >
-        Separate skills using commas.
-      </p>
+        <input
+          type="text"
+          value={skillInput}
+          onChange={(event) => handleSkillInputChange(event.target.value)}
+          onKeyDown={handleSkillKeyDown}
+          onPaste={handleSkillPaste}
+          placeholder="Type a skill and press Enter"
+          className={`w-full rounded-[12px] border px-3.5 py-3 text-sm outline-none transition ${
+            isDark
+              ? "border-[#30343A] bg-[#191C21] text-[#FAF9F4] placeholder:text-[#70757D] focus:border-[#FAF9F4]"
+              : "border-[#E0E0E0] bg-white text-[#111111] placeholder:text-[#9CA3AF] focus:border-[#111111]"
+          }`}
+        />
+
+        <p
+          className={`mt-2 text-xs ${
+            isDark ? "text-[#777]" : "text-[#6B7280]"
+          }`}
+        >
+          Press Enter or comma to add a skill. Spaces are allowed inside skill
+          names.
+        </p>
+      </div>
 
       {resume.skills.length > 0 && (
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mt-5 flex flex-wrap gap-2">
           {resume.skills.map((skill, index) => (
-            <span
+            <div
               key={`${skill}-${index}`}
-              className={`rounded-full px-3 py-1.5 text-xs ${
+              className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs ${
                 isDark
-                  ? "bg-[#191C21] text-[#FAF9F4]"
-                  : "bg-[#E7E7E7] text-[#111111]"
+                  ? "border-[#30343A] bg-[#191C21] text-[#FAF9F4]"
+                  : "border-[#E0E0E0] bg-[#F3F3F3] text-[#111111]"
               }`}
             >
-              {skill}
-            </span>
+              <span>{skill}</span>
+
+              <button
+                type="button"
+                onClick={() => handleRemoveSkill(index)}
+                className="flex h-4 w-4 items-center justify-center rounded-full text-[#777] transition hover:text-red-500"
+                aria-label={`Remove ${skill}`}
+              >
+                <X size={12} />
+              </button>
+            </div>
           ))}
+        </div>
+      )}
+
+      {resume.skills.length === 0 && (
+        <div
+          className={`mt-5 rounded-[12px] border border-dashed px-4 py-6 text-center text-xs ${
+            isDark
+              ? "border-[#30343A] text-[#777]"
+              : "border-[#D7D7D7] text-[#9CA3AF]"
+          }`}
+        >
+          Your added skills will appear here.
         </div>
       )}
     </SectionWrapper>
@@ -1123,7 +1208,7 @@ function Builder() {
   };
 
   /* =======================================================
-     TEMPLATE CARD
+     TEMPLATE BUTTON
   ======================================================= */
 
   const TemplateButton = ({ id: templateId, name }) => {
@@ -1161,10 +1246,12 @@ function Builder() {
 
   return (
     <main
-      className={`min-h-screen ${
+      className={`min-h-screen pt-16 ${
         isDark ? "bg-[#111111] text-[#FAF9F4]" : "bg-[#FAF9F4] text-[#111111]"
       }`}
     >
+      <MouseSpotlight />
+
       <Navbar />
 
       {/* =====================================================
@@ -1252,7 +1339,7 @@ function Builder() {
       ===================================================== */}
 
       <div className="mx-auto max-w-[1600px] px-5 py-6 lg:px-8">
-        <div className="grid gap-6 lg:grid-cols-[230px_minmax(0,1fr)_460px]">
+        <div className="grid gap-6 lg:grid-cols-[230px_minmax(0,1fr)_560px]">
           {/* =================================================
               LEFT SIDEBAR
           ================================================= */}
@@ -1296,8 +1383,6 @@ function Builder() {
                 })}
               </div>
 
-              {/* TEMPLATE SELECTOR */}
-
               <div className="mt-8">
                 <p
                   className={`mb-3 font-mono text-[10px] uppercase tracking-[0.15em] ${
@@ -1309,11 +1394,8 @@ function Builder() {
 
                 <div className="grid grid-cols-2 gap-2">
                   <TemplateButton id="modern" name="Modern" />
-
                   <TemplateButton id="classic" name="Classic" />
-
                   <TemplateButton id="minimal" name="Minimal" />
-
                   <TemplateButton id="creative" name="Creative" />
                 </div>
               </div>
@@ -1325,8 +1407,6 @@ function Builder() {
           ================================================= */}
 
           <section>
-            {/* Mobile Section Selector */}
-
             <div className="mb-5 lg:hidden">
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {sections.map((section) => (
@@ -1349,15 +1429,10 @@ function Builder() {
                 ))}
               </div>
 
-              {/* Mobile Template */}
-
               <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
                 <TemplateButton id="modern" name="Modern" />
-
                 <TemplateButton id="classic" name="Classic" />
-
                 <TemplateButton id="minimal" name="Minimal" />
-
                 <TemplateButton id="creative" name="Creative" />
               </div>
             </div>
@@ -1366,7 +1441,7 @@ function Builder() {
           </section>
 
           {/* =================================================
-              DESKTOP PREVIEW
+              DESKTOP LIVE PREVIEW
           ================================================= */}
 
           <aside className="hidden lg:block">
@@ -1384,15 +1459,15 @@ function Builder() {
                   </p>
                 </div>
 
-                <button
-                  type="button"
-                  className={`flex items-center gap-2 rounded-[10px] border px-3 py-2 text-xs ${
-                    isDark ? "border-[#30343A]" : "border-[#E0E0E0]"
+                <PDFExportButton
+                  className={`flex items-center gap-2 rounded-[10px] border px-3 py-2 text-xs transition ${
+                    isDark
+                      ? "border-[#30343A] hover:bg-[#191C21]"
+                      : "border-[#E0E0E0] hover:bg-[#E7E7E7]"
                   }`}
                 >
-                  <Download size={14} />
                   Export
-                </button>
+                </PDFExportButton>
               </div>
 
               <div
@@ -1402,8 +1477,8 @@ function Builder() {
                     : "border-[#E7E7E7] bg-[#E7E7E7]"
                 }`}
               >
-                <div className="mx-auto aspect-[210/297] w-full max-w-[430px] overflow-hidden shadow-xl">
-                  <ResumeMockup style={selectedTemplate} />
+                <div className="mx-auto aspect-[210/297] w-full max-w-[560px] overflow-hidden bg-white shadow-xl">
+                  <BuilderPreview />
                 </div>
               </div>
             </div>
@@ -1430,8 +1505,6 @@ function Builder() {
               isDark ? "bg-[#191C21]" : "bg-[#FAF9F4]"
             }`}
           >
-            {/* Modal Header */}
-
             <div
               className={`flex items-center justify-between border-b px-5 py-4 ${
                 isDark ? "border-[#30343A]" : "border-[#E7E7E7]"
@@ -1441,24 +1514,38 @@ function Builder() {
                 <p className="text-sm font-medium">Resume Preview</p>
 
                 <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.12em] text-[#777]">
-                  {selectedTemplate}
+                  {selectedTemplate} template
                 </p>
               </div>
 
-              <button
-                type="button"
-                onClick={() => setShowPreview(false)}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-[#D5D5D5]"
-              >
-                <X size={16} />
-              </button>
-            </div>
+              <div className="flex items-center gap-2">
+                <PDFExportButton
+                  className={`flex items-center gap-2 rounded-[10px] px-3 py-2 text-xs font-medium transition ${
+                    isDark
+                      ? "bg-[#FAF9F4] text-[#111111] hover:bg-[#E7E7E7]"
+                      : "bg-[#111111] text-[#FAF9F4] hover:bg-[#191C21]"
+                  }`}
+                >
+                  Export PDF
+                </PDFExportButton>
 
-            {/* Preview */}
+                <button
+                  type="button"
+                  onClick={() => setShowPreview(false)}
+                  className={`flex h-9 w-9 items-center justify-center rounded-full border transition ${
+                    isDark
+                      ? "border-[#30343A] hover:bg-[#30343A]"
+                      : "border-[#D5D5D5] hover:bg-[#E7E7E7]"
+                  }`}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
 
             <div className="overflow-y-auto p-5">
               <div className="mx-auto aspect-[210/297] w-full max-w-[520px] overflow-hidden bg-white shadow-2xl">
-                <ResumeMockup style={selectedTemplate} />
+                <BuilderPreview />
               </div>
             </div>
           </motion.div>

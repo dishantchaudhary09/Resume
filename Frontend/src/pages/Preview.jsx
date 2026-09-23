@@ -1,20 +1,18 @@
-
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { motion } from "motion/react";
-import {
-  ArrowLeft,
-  Download,
-  Edit3,
-  Printer,
-} from "lucide-react";
-import { FaGithub, FaLinkedin } from "react-icons/fa";
+import { useRef, useState } from "react";
+
+import { ArrowLeft, Download, Edit3, Printer } from "lucide-react";
+
+import { FaGithub, FaLinkedin, FaGlobe } from "react-icons/fa";
+
+import html2pdf from "html2pdf.js";
 
 function Preview() {
   const resume = useSelector((state) => state.resume);
-  const selectedTemplate = useSelector(
-    (state) => state.template.selected
-  );
+
+  const selectedTemplate = resume?.template || "modern";
 
   const personal = resume?.personal || {};
   const education = resume?.education || [];
@@ -25,63 +23,122 @@ function Preview() {
   const achievements = resume?.achievements || [];
   const socialLinks = resume?.socialLinks || {};
 
+  const resumeRef = useRef(null);
+
+  const [downloading, setDownloading] = useState(false);
+
+  /* =====================================================
+     PRINT
+  ===================================================== */
+
   const printResume = () => {
     window.print();
   };
 
-  const downloadPDF = () => {
-    window.print();
+  /* =====================================================
+     DOWNLOAD PDF
+  ===================================================== */
+
+  const downloadPDF = async () => {
+    if (!resumeRef.current) return;
+
+    try {
+      setDownloading(true);
+
+      const fileName = personal.fullName?.trim()
+        ? `${personal.fullName.trim().replace(/\s+/g, "-")}-Resume.pdf`
+        : "ResumeForge-Resume.pdf";
+
+      const options = {
+        margin: 0,
+        filename: fileName,
+
+        image: {
+          type: "jpeg",
+          quality: 0.98,
+        },
+
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: "#ffffff",
+        },
+
+        jsPDF: {
+          unit: "mm",
+          format: "a4",
+          orientation: "portrait",
+        },
+
+        pagebreak: {
+          mode: ["avoid-all", "css", "legacy"],
+        },
+      };
+
+      await html2pdf().set(options).from(resumeRef.current).save();
+    } catch (error) {
+      console.error("PDF download failed:", error);
+
+      alert("PDF download failed. Please try again.");
+    } finally {
+      setDownloading(false);
+    }
   };
 
   return (
     <main className="min-h-screen bg-[#E7E7E7] text-[#111111]">
-      {/* Header */}
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
+
       <header className="sticky top-0 z-40 border-b border-[#2B2E33] bg-[#191C21] text-[#FAF9F4] print:hidden">
         <div className="flex h-16 items-center justify-between px-5 lg:px-8">
-          <Link
-            to="/builder"
-            className="flex items-center gap-2 text-sm"
-          >
+          <Link to="/builder" className="flex items-center gap-2 text-sm">
             <ArrowLeft size={17} />
 
-            <span className="hidden sm:inline">
-              Back to Builder
-            </span>
+            <span className="hidden sm:inline">Back to Builder</span>
           </Link>
 
           <div className="absolute left-1/2 -translate-x-1/2">
-            <span className="font-semibold tracking-tight">
-              ResumeForge
-            </span>
+            <span className="font-semibold tracking-tight">ResumeForge</span>
           </div>
 
           <div className="flex items-center gap-2">
+            {/* PRINT */}
+
             <button
               onClick={printResume}
+              type="button"
               className="flex items-center gap-2 rounded-[12px] border border-[#3A3D43] px-4 py-2 text-xs transition hover:bg-[#25282E]"
             >
               <Printer size={15} />
 
-              <span className="hidden sm:inline">
-                Print
-              </span>
+              <span className="hidden sm:inline">Print</span>
             </button>
+
+            {/* DOWNLOAD PDF */}
 
             <button
               onClick={downloadPDF}
-              className="flex items-center gap-2 rounded-[12px] bg-[#FAF9F4] px-4 py-2 text-xs font-medium text-[#111111]"
+              type="button"
+              disabled={downloading}
+              className="flex items-center gap-2 rounded-[12px] bg-[#FAF9F4] px-4 py-2 text-xs font-medium text-[#111111] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Download size={15} />
 
-              <span>Download PDF</span>
+              <span>{downloading ? "Generating..." : "Download PDF"}</span>
             </button>
           </div>
         </div>
       </header>
 
-      {/* Preview Area */}
+      {/* =====================================================
+          PREVIEW AREA
+      ===================================================== */}
+
       <section className="px-4 py-8 sm:px-8 lg:px-12 lg:py-12">
-        {/* Toolbar */}
+        {/* TOOLBAR */}
+
         <div className="mx-auto mb-6 flex max-w-[900px] items-center justify-between print:hidden">
           <div>
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#4B5563]">
@@ -89,21 +146,23 @@ function Preview() {
             </p>
 
             <p className="mt-1 text-sm font-medium capitalize">
-              {selectedTemplate || "modern"} Template
+              {selectedTemplate} Template
             </p>
           </div>
 
           <Link
             to="/builder"
-            className="flex items-center gap-2 rounded-[12px] border border-[#CFCFCF] bg-[#FAF9F4] px-4 py-2 text-xs font-medium"
+            className="flex items-center gap-2 rounded-[12px] border border-[#CFCFCF] bg-[#FAF9F4] px-4 py-2 text-xs font-medium transition hover:bg-white"
           >
             <Edit3 size={14} />
-
             Edit Resume
           </Link>
         </div>
 
-        {/* Resume */}
+        {/* ===================================================
+            RESUME
+        =================================================== */}
+
         <motion.div
           initial={{
             opacity: 0,
@@ -120,88 +179,108 @@ function Preview() {
           className="mx-auto w-full max-w-[800px]"
         >
           <div
+            ref={resumeRef}
             id="resume-preview"
             className="min-h-[1120px] bg-white px-10 py-12 shadow-2xl sm:px-14 sm:py-14 lg:px-16"
           >
-            {/* Personal Header */}
+            {/* =================================================
+                PERSONAL HEADER
+            ================================================= */}
+
             <div className="border-b-2 border-[#111111] pb-6">
               <h1 className="text-4xl font-semibold tracking-tight">
-                {personal.name || "Your Name"}
+                {personal.fullName || "Your Name"}
               </h1>
 
-              <p className="mt-2 text-base text-[#4B5563]">
-                {personal.jobTitle || "Professional Title"}
-              </p>
-
               <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-xs text-[#4B5563]">
-                {personal.email && (
-                  <span>{personal.email}</span>
-                )}
+                {personal.email && <span>{personal.email}</span>}
 
-                {personal.phone && (
-                  <span>{personal.phone}</span>
-                )}
+                {personal.phone && <span>{personal.phone}</span>}
 
-                {personal.location && (
-                  <span>{personal.location}</span>
-                )}
+                {personal.location && <span>{personal.location}</span>}
 
-                {!personal.email &&
-                  !personal.phone &&
-                  !personal.location && (
-                    <>
-                      <span>email@example.com</span>
-                      <span>+91 00000 00000</span>
-                      <span>Location</span>
-                    </>
-                  )}
+                {!personal.email && !personal.phone && !personal.location && (
+                  <>
+                    <span>email@example.com</span>
+                    <span>+91 00000 00000</span>
+                    <span>Location</span>
+                  </>
+                )}
               </div>
 
-              {/* Social Links */}
+              {/* =================================================
+                  SOCIAL LINKS
+              ================================================= */}
+
               {(socialLinks.linkedin ||
                 socialLinks.github ||
                 socialLinks.portfolio) && (
-                <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-[#4B5563]">
+                <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-[#4B5563]">
+                  {/* LINKEDIN */}
+
                   {socialLinks.linkedin && (
                     <a
-                      href={socialLinks.linkedin}
+                      href={
+                        socialLinks.linkedin.startsWith("http")
+                          ? socialLinks.linkedin
+                          : `https://${socialLinks.linkedin}`
+                      }
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center gap-1.5 hover:text-[#111111]"
+                      className="flex items-center gap-1.5 transition hover:text-[#111111]"
                     >
-                      <FaLinkedin size={12} />
-                      LinkedIn
+                      <FaLinkedin size={13} />
+
+                      <span>LinkedIn</span>
                     </a>
                   )}
+
+                  {/* GITHUB */}
 
                   {socialLinks.github && (
                     <a
-                      href={socialLinks.github}
+                      href={
+                        socialLinks.github.startsWith("http")
+                          ? socialLinks.github
+                          : `https://${socialLinks.github}`
+                      }
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center gap-1.5 hover:text-[#111111]"
+                      className="flex items-center gap-1.5 transition hover:text-[#111111]"
                     >
-                      <FaGithub size={12} />
-                      GitHub
+                      <FaGithub size={13} />
+
+                      <span>GitHub</span>
                     </a>
                   )}
 
+                  {/* PORTFOLIO */}
+
                   {socialLinks.portfolio && (
                     <a
-                      href={socialLinks.portfolio}
+                      href={
+                        socialLinks.portfolio.startsWith("http")
+                          ? socialLinks.portfolio
+                          : `https://${socialLinks.portfolio}`
+                      }
                       target="_blank"
                       rel="noreferrer"
-                      className="hover:text-[#111111]"
+                      className="flex items-center gap-1.5 transition hover:text-[#111111]"
                     >
-                      Portfolio
+                      <FaGlobe size={13} />
+
+                      <span>Portfolio</span>
                     </a>
                   )}
                 </div>
               )}
             </div>
 
-            {/* Profile */}
-            {(personal.summary || !personal.name) && (
+            {/* =================================================
+                PROFILE
+            ================================================= */}
+
+            {(personal.summary || !personal.fullName) && (
               <section className="mt-7">
                 <ResumeHeading title="Profile" />
 
@@ -212,7 +291,10 @@ function Preview() {
               </section>
             )}
 
-            {/* Experience */}
+            {/* =================================================
+                EXPERIENCE
+            ================================================= */}
+
             {experience.length > 0 && (
               <section className="mt-7">
                 <ResumeHeading title="Experience" />
@@ -229,9 +311,7 @@ function Preview() {
                           <p className="mt-1 text-xs text-[#4B5563]">
                             {item.company}
 
-                            {item.company &&
-                              item.location &&
-                              " · "}
+                            {item.company && item.location && " · "}
 
                             {item.location}
                           </p>
@@ -240,9 +320,7 @@ function Preview() {
                         <span className="text-xs text-[#4B5563]">
                           {item.startDate}
 
-                          {item.startDate &&
-                            item.endDate &&
-                            " — "}
+                          {item.startDate && item.endDate && " — "}
 
                           {item.endDate}
                         </span>
@@ -259,17 +337,17 @@ function Preview() {
               </section>
             )}
 
-            {/* Education */}
+            {/* =================================================
+                EDUCATION
+            ================================================= */}
+
             {education.length > 0 && (
               <section className="mt-7">
                 <ResumeHeading title="Education" />
 
                 <div className="mt-4 space-y-4">
                   {education.map((item, index) => (
-                    <div
-                      key={index}
-                      className="flex justify-between gap-4"
-                    >
+                    <div key={index} className="flex justify-between gap-4">
                       <div>
                         <h3 className="text-sm font-semibold">
                           {item.degree || "Degree / Course"}
@@ -278,9 +356,7 @@ function Preview() {
                         <p className="mt-1 text-xs text-[#4B5563]">
                           {item.institution}
 
-                          {item.institution &&
-                            item.location &&
-                            " · "}
+                          {item.institution && item.location && " · "}
 
                           {item.location}
                         </p>
@@ -295,9 +371,7 @@ function Preview() {
                       <span className="text-xs text-[#4B5563]">
                         {item.startDate}
 
-                        {item.startDate &&
-                          item.endDate &&
-                          " — "}
+                        {item.startDate && item.endDate && " — "}
 
                         {item.endDate}
                       </span>
@@ -307,7 +381,10 @@ function Preview() {
               </section>
             )}
 
-            {/* Projects */}
+            {/* =================================================
+                PROJECTS
+            ================================================= */}
+
             {projects.length > 0 && (
               <section className="mt-7">
                 <ResumeHeading title="Projects" />
@@ -322,7 +399,11 @@ function Preview() {
 
                         {project.link && (
                           <a
-                            href={project.link}
+                            href={
+                              project.link.startsWith("http")
+                                ? project.link
+                                : `https://${project.link}`
+                            }
                             target="_blank"
                             rel="noreferrer"
                             className="text-xs underline"
@@ -349,7 +430,10 @@ function Preview() {
               </section>
             )}
 
-            {/* Skills */}
+            {/* =================================================
+                SKILLS
+            ================================================= */}
+
             {skills.length > 0 && (
               <section className="mt-7">
                 <ResumeHeading title="Skills" />
@@ -360,16 +444,17 @@ function Preview() {
                       key={index}
                       className="rounded bg-[#E7E7E7] px-3 py-1.5 text-xs"
                     >
-                      {typeof skill === "string"
-                        ? skill
-                        : skill.name}
+                      {typeof skill === "string" ? skill : skill.name}
                     </span>
                   ))}
                 </div>
               </section>
             )}
 
-            {/* Certifications */}
+            {/* =================================================
+                CERTIFICATIONS
+            ================================================= */}
+
             {certifications.length > 0 && (
               <section className="mt-7">
                 <ResumeHeading title="Certifications" />
@@ -384,16 +469,18 @@ function Preview() {
                       <p className="mt-1 text-xs text-[#4B5563]">
                         {item.organization}
 
-                        {item.organization &&
-                          item.date &&
-                          " · "}
+                        {item.organization && item.date && " · "}
 
                         {item.date}
                       </p>
 
                       {item.link && (
                         <a
-                          href={item.link}
+                          href={
+                            item.link.startsWith("http")
+                              ? item.link
+                              : `https://${item.link}`
+                          }
                           target="_blank"
                           rel="noreferrer"
                           className="text-xs underline"
@@ -407,7 +494,10 @@ function Preview() {
               </section>
             )}
 
-            {/* Achievements */}
+            {/* =================================================
+                ACHIEVEMENTS
+            ================================================= */}
+
             {achievements.length > 0 && (
               <section className="mt-7">
                 <ResumeHeading title="Achievements" />
@@ -422,9 +512,7 @@ function Preview() {
                       <p className="mt-1 text-xs text-[#4B5563]">
                         {item.organization}
 
-                        {item.organization &&
-                          item.date &&
-                          " · "}
+                        {item.organization && item.date && " · "}
 
                         {item.date}
                       </p>
@@ -443,14 +531,20 @@ function Preview() {
         </motion.div>
       </section>
 
-      {/* Bottom */}
+      {/* =====================================================
+          BOTTOM
+      ===================================================== */}
+
       <div className="pb-10 text-center print:hidden">
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#4B5563]">
           ResumeForge / Build a resume worth remembering.
         </p>
       </div>
 
-      {/* Print Styles */}
+      {/* =====================================================
+          PRINT STYLES
+      ===================================================== */}
+
       <style>{`
         @media print {
           @page {
@@ -458,7 +552,10 @@ function Preview() {
             margin: 0;
           }
 
+          html,
           body {
+            margin: 0 !important;
+            padding: 0 !important;
             background: white !important;
           }
 
@@ -477,12 +574,17 @@ function Preview() {
 
           main {
             background: white !important;
+            min-height: 0 !important;
           }
         }
       `}</style>
     </main>
   );
 }
+
+/* =========================================================
+   RESUME HEADING
+========================================================= */
 
 function ResumeHeading({ title }) {
   return (

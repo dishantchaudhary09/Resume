@@ -8,42 +8,54 @@ import ScrollReveal from "../components/ScrollReveal";
 import features from "../data/features";
 import { templates } from "../data/templates";
 import ResumeMockup from "../components/ResumeMockup";
+import HomeResumeSkeleton from "../components/HomeResumeSkelton";
 
 function Home() {
   return (
-    <div className="min-h-screen max-h-full w-full bg-[#FAF9F4] text-[#111111]">
-      {/* Mouse Spotlight */}
+    <div className="min-h-screen w-full bg-[#FAF9F4] text-[#111111]">
+      {/* =====================================================
+          MOUSE SPOTLIGHT
+      ===================================================== */}
       <MouseSpotlight />
 
-      {/* Navbar */}
+      {/* =====================================================
+          FIXED NAVBAR
+      ===================================================== */}
       <Navbar />
 
-      <main>
+      {/* 
+        Navbar height = 64px
+        Main starts after navbar.
+      */}
+      <main className="pt-16">
         {/* =====================================================
             HERO
         ===================================================== */}
 
-        <section className="min-h-[calc(100svh-64px)] bg-[#111111] px-6 py-16 text-[#FAF9F4] md:px-8 md:py-20 lg:py-24">
-          <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-2 lg:gap-16">
-            {/* Hero Content */}
+        <section className="flex min-h-[calc(100svh-64px)] items-center overflow-hidden bg-[#111111] px-6 py-10 text-[#FAF9F4] md:px-8 md:py-12 lg:py-14">
+          <div className="mx-auto grid w-full max-w-7xl items-center gap-10 lg:grid-cols-2 lg:gap-14">
+            {/* =================================================
+                HERO CONTENT
+            ================================================= */}
+
             <div>
               <p className="font-mono text-xs uppercase tracking-[0.18em] text-[#E7E7E7]/70">
                 Resume builder / 01
               </p>
 
-              <h1 className="mt-6 max-w-3xl text-5xl font-medium leading-[1.02] tracking-[-0.04em] md:text-6xl lg:text-7xl">
+              <h1 className="mt-5 max-w-3xl text-5xl font-medium leading-[1.02] tracking-[-0.04em] md:text-6xl lg:text-7xl">
                 Build a resume
                 <br />
                 worth remembering.
               </h1>
 
-              <p className="mt-7 max-w-xl text-base leading-7 text-[#E7E7E7]/75 md:text-lg">
+              <p className="mt-6 max-w-xl text-base leading-7 text-[#E7E7E7]/75 md:text-lg">
                 Create a polished, professional resume with carefully designed
                 templates, simple editing tools, and instant PDF export.
               </p>
 
               {/* CTA */}
-              <div className="mt-9 flex flex-wrap gap-3">
+              <div className="mt-7 flex flex-wrap gap-3">
                 <Link
                   to="/builder"
                   className="inline-flex items-center justify-center rounded-[15px] border border-[#FAF9F4] bg-[#FAF9F4] px-5 py-3 text-sm font-medium text-[#111111] transition duration-300 hover:-translate-y-1"
@@ -62,14 +74,19 @@ function Home() {
               </div>
             </div>
 
-            {/* Resume Preview */}
+            {/* =================================================
+                HOME RESUME SKELETON
+            ================================================= */}
+
             <div className="relative">
+              {/* Preview Label */}
               <div className="absolute -right-5 -top-5 z-10 hidden rounded-full border border-[#E7E7E7]/20 bg-[#111111]/50 px-4 py-2 font-mono text-[10px] uppercase tracking-wider text-[#E7E7E7]/60 backdrop-blur-md md:block">
-                Live Preview
+                Resume Preview
               </div>
 
-              <div className="mx-auto w-full max-w-[520px] rotate-1 bg-[#FAF9F4] p-5 shadow-2xl transition-transform duration-500 hover:rotate-0 md:p-7">
-                <ResumeMockup style="modern" />
+              {/* Resume */}
+              <div className="mx-auto w-full max-w-[500px] rotate-1 bg-[#FAF9F4] p-4 shadow-2xl transition-transform duration-500 hover:rotate-0 md:p-5">
+                <HomeResumeSkeleton />
               </div>
             </div>
           </div>
@@ -203,7 +220,7 @@ function Home() {
                     className="group rounded-[15px] bg-[#E7E7E7] p-5"
                   >
                     <div className="aspect-[3/4] overflow-hidden bg-[#FAF9F4] shadow-sm transition-transform duration-300 group-hover:-translate-y-2">
-                      <ResumeMockup style={template.style} />
+                      <ResumeMockup style={template.style} mode="template" />
                     </div>
 
                     <div className="pt-4">
@@ -261,6 +278,10 @@ function Home() {
           </section>
         </ScrollReveal>
       </main>
+
+      {/* =====================================================
+          FOOTER
+      ===================================================== */}
 
       <Footer />
     </div>

@@ -31,19 +31,19 @@ function App() {
 
       <Route path="/register" element={<Register />} />
 
-
       {/* ================= PROTECTED ROUTES ================= */}
 
       {/* <Route element={<ProtectedRoute />}> */}
-        <Route path="/dashboard" element={<Dashboard />} />
 
-        <Route path="/builder" element={<Builder />} />
+      <Route path="/dashboard" element={<Dashboard />} />
 
-        <Route path="/builder/:id" element={<Builder />} />
+      <Route path="/builder" element={<Builder />} />
 
-        <Route path="/preview" element={<Preview />} />
+      <Route path="/builder/:id" element={<Builder />} />
+
+      <Route path="/preview" element={<Preview />} />
+
       {/* </Route> */}
-
 
       {/* ================= 404 ================= */}
 

@@ -14,13 +14,14 @@ function Navbar() {
   const token = useSelector((state) => state.auth.token);
 
   const isAuthenticated = Boolean(user && token);
-
   const isDark = theme === "dark";
 
   const navLinkClass = ({ isActive }) =>
     `text-sm transition ${
       isActive
-        ? "font-medium"
+        ? isDark
+          ? "font-medium text-[#FAF9F4]"
+          : "font-medium text-[#111111]"
         : isDark
           ? "text-[#A7A7A7] hover:text-[#FAF9F4]"
           : "text-[#4B5563] hover:text-[#111111]"
@@ -35,10 +36,10 @@ function Navbar() {
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className={`sticky top-0 z-50 border-b ${
+      className={`fixed left-0 right-0 top-0 z-50 border-b ${
         isDark
-          ? "border-[#2B2E33] bg-[#111111] text-[#FAF9F4]"
-          : "border-[#E7E7E7] bg-[#FAF9F4] text-[#111111]"
+          ? "border-[#2B2E33] bg-[#111111]/95 text-[#FAF9F4] backdrop-blur-md"
+          : "border-[#E7E7E7] bg-[#FAF9F4]/95 text-[#111111] backdrop-blur-md"
       }`}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 lg:px-8">

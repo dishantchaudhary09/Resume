@@ -1,22 +1,24 @@
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import MouseSpotlight from "../components/MouseSpotlight";
 import { motion } from "motion/react";
 import { ArrowUpRight, Check, Sparkles } from "lucide-react";
 
 import { templates } from "../data/templates";
-import ResumeMockup from "../components/ResumeMockup";
+import TemplatePreview from "../components/TemplatePreview";
 
 function Templates() {
   return (
-    <main className="min-h-screen bg-[#FAF9F4] text-[#111111]">
+    <main className="min-h-screen bg-[#FAF9F4] pt-16 text-[#111111]">
       <Navbar />
+      <MouseSpotlight />
 
       {/* =========================================================
           HERO
       ========================================================= */}
 
-      <section className="bg-[#191C21] px-5 py-24 text-[#FAF9F4] lg:px-10 lg:py-32">
-        <div className="mx-auto max-w-[1400px]">
+      <section className="flex min-h-[calc(100svh-4rem)] items-center bg-[#191C21] px-5 py-12 text-[#FAF9F4] lg:px-10 lg:py-16">
+        <div className="mx-auto w-full max-w-[1400px]">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -40,7 +42,12 @@ function Templates() {
             </p>
           </motion.div>
 
-          <div className="mt-16 flex items-center gap-3">
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="mt-16 flex items-center gap-3"
+          >
             <span className="rounded-full bg-[#FAF9F4] px-4 py-2 text-xs font-medium text-[#111111]">
               {String(templates.length).padStart(2, "0")} Templates
             </span>
@@ -48,7 +55,7 @@ function Templates() {
             <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-[#E7E7E7]">
               A4 ready
             </span>
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -110,10 +117,19 @@ function Templates() {
                     </Link>
                   </div>
 
-                  {/* A4 Resume Preview */}
+                  {/* A4 Resume Paper */}
 
                   <div className="mx-auto w-full max-w-[430px]">
-                    <ResumeMockup style={template.style} />
+                    <div
+                      className="relative w-full overflow-hidden bg-white shadow-[0_20px_50px_rgba(0,0,0,0.15)]"
+                      style={{
+                        aspectRatio: "210 / 297",
+                      }}
+                    >
+                      <div className="absolute inset-0">
+                        <TemplatePreview style={template.style} />
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -142,7 +158,7 @@ function Templates() {
 
                   <Link
                     to={`/builder?template=${template.id}`}
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#D5D5D5] transition hover:border-[#111111]"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#D5D5D5] transition hover:border-[#111111] hover:bg-[#111111] hover:text-[#FAF9F4]"
                     title="Use template"
                   >
                     <ArrowUpRight size={17} />
@@ -179,7 +195,7 @@ function Templates() {
             </div>
 
             <div className="rounded-[15px] bg-[#FAF9F4] p-6 sm:p-8">
-              <div className="grid grid-cols-2 gap-y-5">
+              <div className="grid grid-cols-1 gap-y-5 sm:grid-cols-2">
                 {[
                   "Personal Information",
                   "Education",
@@ -191,7 +207,7 @@ function Templates() {
                   "Social Links",
                 ].map((item) => (
                   <div key={item} className="flex items-center gap-3 text-sm">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#191C21] text-[#FAF9F4]">
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#191C21] text-[#FAF9F4]">
                       <Check size={12} />
                     </div>
 
