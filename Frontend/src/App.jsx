@@ -33,7 +33,7 @@ function App() {
 
       {/* ================= PROTECTED ROUTES ================= */}
 
-      {/* <Route element={<ProtectedRoute />}> */}
+   <Route element={<ProtectedRoute />}>
 
       <Route path="/dashboard" element={<Dashboard />} />
 
@@ -43,7 +43,7 @@ function App() {
 
       <Route path="/preview" element={<Preview />} />
 
-      {/* </Route> */}
+      </Route>
 
       {/* ================= 404 ================= */}
 
